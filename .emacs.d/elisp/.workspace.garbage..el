@@ -33,8 +33,6 @@
 ;; theme
 (load-theme 'modus-vivendi t)
 
-
-
 ;; HELM ----------------------------------------
 (helm-mode 1)
 (helm-autoresize-mode t)
@@ -60,6 +58,7 @@
 (require 'ui-settings)
 (require 'prog-settings)
 (require 'key-bindings)
+(require 'feeds-internet)
 
 (provide '.workspace.garbage..el)
 
