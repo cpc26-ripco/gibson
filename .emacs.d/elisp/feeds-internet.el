@@ -46,6 +46,8 @@
 
 (define-key elfeed-show-mode-map (kbd "B") 'cpc26/elfeed-show-visit-gui)
 
+(message "[✓] Feeds configured.")
+
 (provide 'feeds-internet)
 
 ;;; feeds-internet.el ends here

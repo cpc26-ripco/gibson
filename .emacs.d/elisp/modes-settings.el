@@ -9,6 +9,15 @@
 (semantic-mode 1)
 (desktop-save-mode 1)
 (electric-pair-mode 1)
+;; HELM ----------------------------------------
+(helm-mode 1)
+(helm-autoresize-mode t)
+(setq helm-M-x-fuzzy-match t)
+(setq helm-buffers-fuzzy-matching t
+      helm-recentf-fuzzy-match    t)
+(setq helm-semantic-fuzzy-match t
+      helm-imenu-fuzzy-match    t)
+
 ;;; Ibuffer
 (require 'ibuffer-git)
 (defalias 'list-buffers 'ibuffer) ; make ibuffer default
@@ -33,6 +42,11 @@
 	    (ibuffer-vc-set-filter-groups-by-vc-root)
 	    (unless (eq ibuffer-sorting-mode 'alphabetic)
 	      (ibuffer-do-sort-by-alphabetic))))
+
+;;; diversions and sundries.
+(require 'avocations)
+
+(message "[✓] Modes complete.")
 
 (provide 'modes-settings)
 

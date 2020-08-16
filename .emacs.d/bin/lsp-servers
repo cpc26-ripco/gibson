@@ -1,0 +1,39 @@
+#  -*- mode: shell-script; -*-
+#!/usr/bin/env bash
+#
+# install the lsp servers.
+function nodejs-install() {
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+}
+
+function go-lang() {
+    sudo aptitude -y install golang-go
+}
+
+function sql-mode() {
+    go-lang
+    go get github.com/lighttiger2505/sqls
+}
+
+function dockerfile-more () {
+    npm install -g dockerfile-language-server-nodejs
+}
+
+function cfn-lint () {
+    pip install cfn-lint
+}
+
+function installs() {
+    nodejs-install
+    sql-mode
+    dockerfile-mode
+    cfn-lint
+}
+
+main () {
+    installs
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

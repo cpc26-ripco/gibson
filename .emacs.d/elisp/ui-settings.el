@@ -40,6 +40,8 @@
 (add-hook 'company-mode-hook 'company-box-mode)
 (company-box-icons-resize 32)
 
+(message "[✓]  UI complete.")
+
 (provide 'ui-settings)
 
 ;;; ui-settings.el ends here
