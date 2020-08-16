@@ -1,0 +1,4 @@
+connections:
+  - alias: dsn_postgresql
+    driver: postgresql
+    dataSourceName: host=127.0.0.1 port=5432 user=<youruser> password=<yourpass> dbname=<yourdb> sslmode=disable
