@@ -1,0 +1,792 @@
+#! /bin/sh
+# This is a shell archive.  Remove anything before this line, then unpack
+# it by saving it into a file and typing "sh file".  To overwrite existing
+# files, type "sh file -c".  You can also feed this as standard input via
+# unshar, or by typing "sh <file", e.g..  If this archive is complete, you
+# will see the following message at the end:
+#		"End of shell archive."
+# Contents:  Makefile README ash.help ash.inst ash.sh has.c
+# Wrapped by blasius@gmdzi on Thu Dec 16 19:01:48 1993
+PATH=/bin:/usr/bin:/usr/ucb ; export PATH
+if test -f 'Makefile' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'Makefile'\"
+else
+echo shar: Extracting \"'Makefile'\" \(379 characters\)
+sed "s/^X//" >'Makefile' <<'END_OF_FILE'
+X##
+X## ASH Makefile
+X##
+X
+XCFLAGS	= -O
+XL	= /usr/local/lib
+XB	= /user/local/bin
+X
+Xinstall:	$L/ash.help $L/ash.inst $L/ash.has $B/ash
+X
+X$B/ash:		ash.sh
+X	rm -f $B/ash
+X	cp ash.sh $B/ash
+X	chmod 755 $B/ash
+X$L/ash.help:	ash.help
+X	cp ash.help $L/ash.help
+X$L/ash.inst:	ash.inst
+X	cp ash.inst $L/ash.inst
+X$L/ash.has:	ash.has
+X	cp ash.has $L/ash.has
+Xash.has:	has.c
+X	$(CC) $(CFLAGS) has.c -o ash.has
+END_OF_FILE
+if test 379 -ne `wc -c <'Makefile'`; then
+    echo shar: \"'Makefile'\" unpacked with wrong size!
+fi
+# end of 'Makefile'
+fi
+if test -f 'README' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'README'\"
+else
+echo shar: Extracting \"'README'\" \(281 characters\)
+sed "s/^X//" >'README' <<'END_OF_FILE'
+X
+XThe Adventure shell.
+X
+XThis comes from Doug Gwyn, circa February 1984.
+X
+XI typed it in from hardcopy, hacked on it a bit, and made it slightly more
+Xportable and robust to other /bin/sh variants.
+X
+XStill doesn't work totally.
+X
+XBug?  Complaints?  I don't wanna hear about them...
+X	/r$
+END_OF_FILE
+if test 281 -ne `wc -c <'README'`; then
+    echo shar: \"'README'\" unpacked with wrong size!
+fi
+# end of 'README'
+fi
+if test -f 'ash.help' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'ash.help'\"
+else
+echo shar: Extracting \"'ash.help'\" \(1064 characters\)
+sed "s/^X//" >'ash.help' <<'END_OF_FILE'
+X
+XI understand the following commands (synonyms in parentheses)
+X
+Xchange OBJECT to NEWNAME	Changes the name of the object
+Xclone OBJECT as NEWNAME		Makes a copy of the object
+Xdrop OBJECTS			Leaves the objects in the room
+Xenter (go) PASSAGE		Takes the labeled passage
+Xexamine OBJECTS			Describes the objects in detail
+Xfeed OBJECT to MONSTER		Stuffs the object into a UNIX monster
+Xget (take) OBJECTS		Picks up the specified objects
+Xgrip (bug)			Report a problem with the Adventure shell
+Xhelp				Prints the summary
+Xinventory (i)			Tells what you are carrying
+Xkill (destroy) OBJECTS		Destorys the objects
+Xlook (l)			Describes the room, including hidden objects
+Xopen (read) OBJECT		Shows the contents of an object
+Xquit (quit)			Leaves the Adventure shell
+Xresurrect OBJECTS		Attempts to restore dead objects
+Xsteal OBJECT from MONSTER	Obtains the object from a UNIX monster
+Xthrow OBJECT at daemon		Feeds the object to the printer monster
+Xup				Takes the overhead passage
+Xwake MONSTER			Awakens a UNIX monster
+Xwhere (w)			Tells where you are
+Xxyzzy				Moves you to your home
+X
+END_OF_FILE
+if test 1064 -ne `wc -c <'ash.help'`; then
+    echo shar: \"'ash.help'\" unpacked with wrong size!
+fi
+# end of 'ash.help'
+fi
+if test -f 'ash.inst' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'ash.inst'\"
+else
+echo shar: Extracting \"'ash.inst'\" \(779 characters\)
+sed "s/^X//" >'ash.inst' <<'END_OF_FILE'
+X
+XINSTRUCTIONS FOR THE ADVENTURE SHELL
+X
+XWelcome to the Adventure shell!  In this exploration of the UNIX
+Xfile system, I will act as your eyes and hands.  As you move around,
+XI will describe whatever is visible and will carry out your commands.
+XThe general form of a command is:
+X	verb object extra_stuff
+XMost commands pay no attention to the extra_stuff and many do not need
+Xan object.  A typical command is
+X	get all
+Xwhich picks up all the files in the current room.  You can find out
+Xwhat you are carrying by typing the command
+X	inventory
+XThe command "help" results in a full description of all commands that
+XI understand.  To quit the Adventure shell, type
+X	quit
+XThere are UNIX monsters lurking in the background.  These are also
+Xknown as "commands with arguments."
+X
+XGood luck!
+X
+END_OF_FILE
+if test 779 -ne `wc -c <'ash.inst'`; then
+    echo shar: \"'ash.inst'\" unpacked with wrong size!
+fi
+# end of 'ash.inst'
+fi
+if test -f 'ash.sh' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'ash.sh'\"
+else
+echo shar: Extracting \"'ash.sh'\" \(12019 characters\)
+sed "s/^X//" >'ash.sh' <<'END_OF_FILE'
+X#! /bin/sh
+X# ex:set sw=2 nosm:
+X# Location of utility files and programs.
+XHELP=/usr/local/lib/ash.help
+XINST=/usr/local/lib/ash.inst
+XHAS=/usr/local/lib/ash.has
+X#
+X# Do you believe in "echo -n foo" or "echo foo\c"?
+X#E2= "\c"
+XE1="-n"
+X#
+X#  Pager, pick one.
+X#PAGE=/usr/bin/pg
+XPAGE=/usr/ucb/more
+X#
+X#  Formatter, pick one.
+X#FMT="pr -t -5"
+XFMT=/usr/ucb/fmt
+X#FMT="att pr -t -5"
+X#
+X#  Patch hackery; /.attbin for for Pyramids
+XOPATH=$PATH
+XPATH=/usr/ucb:/usr/bin:/bin #:/.attbin
+Xexport PATH
+X
+Xtrap 'echo Ouch!' 2 3
+Xcd ${HOME}
+X
+X# Limbo is where destroyed objects live
+XLIM=.limbo
+Xmkdir ${LIM} >&- 2>&-
+X
+X# Make our knapsack.
+XKNAP=.knapsack
+Xif [ ! -d $KNAP ] ; then
+X  if mkdir $KNAP >&- 2>&-; then
+X    echo  "You find a discarded empty knapsack."
+X  else
+X    echo "You have no knapsack to carry things in."
+X    exit 1
+X  fi
+Xelse
+X  echo "One moment while I peek into your old knapsack."
+Xfi
+X
+Xkn=`echo \`ls -a $KNAP | sed -e '/^\.$/d' -e '/^\.\.$/d'\``
+X
+Xecho ${E1} "Welcome to the Adventure shell!  Do you need instructions?" ${E2}
+Xread X
+Xif [ $X != "no" ] ; then
+X  $PAGE <$INST
+X  echo ${E1} "Type a RETURN to continue:" ${E2}
+X  read X
+Xfi
+X
+Xwiz=false
+Xcha=false
+Xprev=$LIM
+X
+Xwhile : ; do
+X  room=`pwd`
+X  if [ $room != $prev ] ; then
+X    if [ $room = $HOME ] ; then
+X      echo ${E1} "You are in your own home.  " ${E2}
+X    else
+X      echo ${E1} "You have entered $room.  " ${E2}
+X    fi
+X
+X    # Collect contents of room.
+X    exs= obs= hexs= hobs= f=false
+X    for I in `ls -a` ; do
+X      case $I in
+X	.|..)
+X	  ;;
+X	.*)
+X	  if [ -f $I ] ; then
+X	    hobs="$hobs $I"
+X	  elif [ -d $I ] ; then
+X	    hexs="$hexs $I"
+X	  else
+X	    f=true
+X	  fi
+X	  ;;
+X	*)
+X	  if [ -f $I ] ; then
+X	    obs="$obs $I"
+X	  elif [ -d $I ] ; then
+X	    exs="$exs $I"
+X	  else
+X	    f=true
+X	  fi
+X	  ;;
+X      esac
+X    done
+X
+X    #  Print report of what we found.
+X    if [ "$obs" ] ; then
+X      echo "This room contains:"
+X      echo $obs | tr ' ' '\012' | ${FMT}
+X    else
+X      echo "The room looks empty."
+X    fi
+X    if [ "$exs" ] ; then
+X      echo "There are exits labeled:"
+X      echo $exs | tr ' ' '\012' | ${FMT}
+X      echo "as well as a passage overhead."
+X    else
+X      echo "There is a passage overhead."
+X    fi
+X    if $f ; then
+X      echo "There are shadowy figures in the corner."
+X    fi
+X    prev=$room
+X  fi
+X
+X  echo ${E1} "->  " ${E2}
+X  read verb obj x
+X  if [ $? != 0 ] ; then
+X    verb=quit
+X  fi
+X
+X  case $verb in
+X    change)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  if [ "$x" ] ; then
+X	    set $x
+X	  else
+X	    set ''
+X	  fi
+X	  case "$1" in
+X	    to)
+X	      if [ "$2" ] ; then
+X		if [ -f $2 ] ; then
+X		  echo "You must destroy the $2 first."
+X		  set ''
+X		fi
+X		if [ "$2" ] ; then
+X		  if mv $obj $2 >&- 2>&- ; then
+X		    echo "The $obj shimmers and turns i to $2."
+X		    obs=`echo $2 $obs '' | sed -e "s/ $obj / /" -e 's/ $//'`
+X		  else
+X		    echo "You see a cloud of smoke but the $obj is unchanged."
+X		  fi
+X		fi
+X	      else
+X		echo 'To what?'
+X	      fi
+X	      ;;
+X	    *)
+X	      echo "Change $obj to what?"
+X	      ;;
+X	  esac
+X	elif $HAS " $kn " " $obj " ; then
+X	  echo "You must drop it first."
+X	else
+X	  echo "I see no $obj here."
+X	fi
+X      else
+X	echo "Change what?"
+X      fi
+X      ;;
+X
+X    clone)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  if [ ! -r $obj ] ; then
+X	    echo "The $obj does not wish to be cloned."
+X	  else
+X	    if [ "$x" ] ; then
+X	      set $x
+X	    else
+X	      set ''
+X	    fi
+X	    case "$1" in
+X	      as)
+X		if [ "$2" ] ; then
+X		  if [ -f $2 ] ; then
+X		    echo "You must destroy $2 first."
+X		  elif cp $obj $2 >&- 2>&- ; then
+X		    echo "Poof!  When the smoke clears, you see the new $2."
+X		    obs="$obs $2"
+X		  else
+X		    echo "You hear a dull thud but no clone appears."
+X		  fi
+X		else
+X		  echo "As what?"
+X		fi
+X		;;
+X	      *)
+X		echo "Cone $obj as what?"
+X		;;
+X	    esac
+X	  fi
+X	elif $HAS " $kn " " $obj " ; then
+X	  echo "You must drop it first."
+X	else
+X	  echo "I see no $obj here."
+X	fi
+X      else
+X	echo "Clone what?"
+X      fi
+X      ;;
+X
+X    drop)
+X      if [ "$obj" ] ; then
+X	for I in $obj $x ; do
+X	  if $HAS " $kn " " $I " ; then
+X	    if [ -w $I ] ; then
+X	      echo "You must destory $I first."
+X	    elif mv $HOME/$KNAP/$I $I >&- 2>&- ; then
+X	      echo "$I: dropped."
+X	      kn=`echo '' $kn '' | sed -e "s/ $I / /" -e 's/^ //' -e 's/  $//'`
+X	      obs=`echo $I $obs`
+X	    else
+X	      echo "The $I is caught in your knapsack."
+X	    fi
+X	  else
+X	    echo "You're not carrying the $I!"
+X	  fi
+X	done
+X      else
+X	echo "Drop what?"
+X      fi
+X      ;;
+X
+X    enter|go)
+X      if [ "$obj" ] ; then
+X	if [ $obj != up ] ; then
+X	  if $HAS " $exs $hexs " " $obj " ; then
+X	    if cd $obj ; then
+X	      echo "You squeeze through the passage."
+X	    else
+X	      echo "An invisible force blocks your way."
+X	    fi
+X	  else
+X	    echo "I see no such passage."
+X	  fi
+X	elif cd .. ; then
+X	  echo "You struggle upwards."
+X	else
+X	  echo "You can't reach that high."
+X	fi
+X      else
+X	echo "Which passage?"
+X      fi
+X      ;;
+X
+X    examine)
+X      if [ "$obj" ] ; then
+X	if [ $obj = all ] ; then
+X	  obj=`echo $obs $exs`
+X	  x=
+X	fi
+X	for I in $obj $x ; do
+X	  if $HAS " $obs $hobs $exs $hexs " " $I " ; then
+X	    echo "Upon close inspection of the $I, you see:"
+X	    if ls -ld $I 2>&- ; then
+X	      :
+X	    else
+X	      echo "-- when you look directly at the $I, it vanishes."
+X	    fi
+X	  elif $HAS " $kn " " $I " ; then
+X	    echo "You must drop it first."
+X	  else
+X	    echo "I see no $I here."
+X	  fi
+X	done
+X      else
+X	echo "Examine what?"
+X      fi
+X      ;;
+X
+X    feed)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  if [ "$x" ] ; then
+X	    set $x
+X	  else
+X	    set ''
+X	  fi
+X	  case "$1" in
+X	    to)
+X	      if [ "$2" ] ; then
+X		shift
+X		if env PATH=$OPATH $* <$obj 2>&- ; then
+X		  echo "The $1 monster devours your $obj."
+X		  if rm -f $obj >&- 2>&1 ; then
+X		    obs=`echo '' $obs '' |
+X			      sed -e "s/ $obj / /" -e 's/^ //' -e 's/ $//'`
+X		  else
+X		    echo "But he spits it back up."
+X		  fi
+X		else
+X		  echo "The $1 monster holds his nose in disdain."
+X		fi
+X	      else
+X		echo "To what?"
+X	      fi
+X	      ;;
+X	    *)
+X	      echo "Feed $obj to what?"
+X	      ;;
+X	  esac
+X	elif $HAS " $kn " " $obj " ; then
+X	  echo "You must drop it first."
+X	else
+X	  echo "I see no $obj here."
+X	fi
+X      else
+X	echo "Feed what?"
+X      fi
+X      ;;
+X
+X    get|take)
+X      if [ "$obj" ] ; then
+X	if [ $obj = all ] ; then
+X	  obj="$obs"
+X	  x=
+X	fi
+X	for I in $obj $x ; do
+X	  if $HAS " $obs $hobs " " $I " ; then
+X	    if $HAS " $kn " | fgrep " $I " ; then
+X	      echo "You already have one."
+X	    elif mv $I $HOME/$KNAP/$I >&- 2>&- ; then
+X	      echo "$I: taken"
+X	      kn="$I $kn"
+X      obs=`echo '' $obs '' | sed -e "s/ $I / /" -e 's/^ //' -e 's/ $//'`
+X	    else
+X	      echo "The $I is too heavy to take."
+X	    fi
+X	  else
+X	    echo "I see no $I here."
+X	  fi
+X	done
+X      else
+X	echo "Take what?"
+X      fi
+X      ;;
+X
+X    help)
+X      $PAGE <$HELP
+X      ;;
+X
+X    inven|inventory|i)
+X      if [ "$kn" ] ; then
+X	echo "Your knapsack contains:"
+X	echo $kn | tr ' ' '\012' | ${FMT}
+X      else
+X	echo "You are poverty-stricken."
+X      fi
+X      ;;
+X
+X    kill|destory)
+X      if [ "$obj" ] ; then
+X	if [ $obj = all ] ; then
+X	  x=
+X	  obj=
+X	  echo "To dangerous to $verb them all at once!"
+X	fi
+X	for I in $obj $x ; do
+X	  if $HAS " $obs $hobs " " $I " ; then
+X	    if mv $I $HOME/$LIM/$I <&- >&- 2>&- ; then
+X	      if [ $verb = kill ] ; then
+X		echo "The $I cannot defend itself; it dies."
+X	      else
+X		echo "You have destroyed the $I; it vanishes."
+X	      fi
+X	    elif [ $verb = kill ] ; then
+X	      echo "Your feeble blows are no match for the $I."
+X	    else
+X	      echo "The $I is indestructible."
+X	    fi
+X	  elif $HAS " $kn " " $I " ; then
+X	    echo "You must drop it first."
+X	  else
+X	    echo "I see no $I here."
+X	  fi
+X	done
+X      else
+X	echo "Kill what?"
+X      fi
+X      ;;
+X
+X    look|l)
+X      obs=`echo $obs $hobs`
+X      hobs=
+X      if [ "$obs" ] ; then
+X	echo "The room contains:"
+X	echo $obs | tr ' ' '\012' | ${FMT}
+X      else
+X	echo "The room is empty."
+X      fi
+X      exs=`echo $exs $hexs`
+X      hexs=
+X      if [ "$exs" ] ; then
+X	echo "There are exits plainly labelled."
+X	echo $exs | tr ' ' '\012' | ${FMT}
+X	echo "... and a passage overhead."
+X      else
+X	echo "The only exit is directly overhead."
+X      fi
+X      ;;
+X
+X    magic)
+X      if [ "$obj" = mode ] ; then
+X	if $cha ; then
+X	  echo "You had your chance and you blew it."
+X	else
+X	  echo ${E1} "Are you a wizard?  " ${E2}
+X	  read X
+X	  if [ "$X" = "yes" ] ; then
+X	    echo "Prove it!  Say the magic word:  "
+X	    read X
+X	    if [ "$X" = "armadillo" ] ; then
+X	      echo "Yes, oh mighty master....  I live to serve."
+X	      wiz=true
+X	    else
+X	      echo "Bah, you are nothing but a charlatan."
+X	      cha=true
+X	    fi
+X	  else
+X	    echo "I didn't think so."
+X	  fi
+X	fi
+X      else
+X	echo "Nice try."
+X      fi
+X      ;;
+X
+X    open|read)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  if [ -r $obj ] ; then
+X	    if [ -s $obj ] ; then
+X	      echo "Opening the $obj reveals:"
+X	      $PAGE <$obj 2>&-
+X	      if [ $? != 0 ] ; then
+X		echo "-- oops, you lost the contents!"
+X	      fi
+X	    else
+X	      echo "There is nothing inside the $obj."
+X	    fi
+X	  else
+X	    echo "You do not have the proper tools to open the $obj."
+X	  fi
+X	elif $HAS " $kn " " $obj " ; then
+X	  echo "You must drop it first."
+X	else
+X	  echo "I see no $obj here."
+X	fi
+X      else
+X	echo "Open what?"
+X      fi
+X      ;;
+X
+X    quit|exit)
+X      echo ${E1} "Do you really want to quit now?" ${E2}
+X      read X
+X      if [ $X = "yes" ] ; then
+X	if [ "$kn" ] ; then
+X	  echo "The contents of your knapsack will still be there next time."
+X	fi
+X	rm -rf $HOME/$LIM
+X	echo "See you later!"
+X	exit 0
+X      fi
+X      ;;
+X
+X    resurrect)
+X      if [ "$obj" ] ; then
+X	for I in $obj $x ; do
+X	  if $HAS " $obs $hobs " " $I " ; then
+X	    echo "The $I is already alive and well."
+X	  elif mv $HOME/$LIM/$I $I <&- >&- 2>&- ; then
+X	    echo "The $I staggers to its feet"
+X	    obs=`echo $I $obs`
+X	  else
+X	    echo "You see sparks, but no $I appears."
+X	  fi
+X	done
+X      else
+X	echo "Resurrect what?"
+X      fi
+X      ;;
+X
+X    steal)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  echo "There is already one here."
+X	else
+X	  if [ "$x" ] ; then
+X	    set $x
+X	  else
+X	    set ''
+X	  fi
+X	  case "$1" in
+X	    from)
+X	      if [ "$2" ] ; then
+X		if env PATH=$OPATH $* >$obj 2>&- ; then
+X		  echo "The $1 monster drops the $obj."
+X		  obs=`echo $obj $obs`
+X		else
+X		  echo "The $1 monster runs away as you approach."
+X		  rm -f $obj >&- 2>&-
+X		fi
+X	      else
+X		echo "From what?"
+X	      fi
+X	      ;;
+X	    *)
+X	      echo "Steal $obj from what?"
+X	      ;;
+X	  esac
+X	fi
+X      else
+X	echo "Steal what?"
+X      fi
+X      ;;
+X
+X    throw|toss)
+X      if [ "$obj" ] ; then
+X	if $HAS " $obs $hobs " " $obj " ; then
+X	  if [ "$x" ] ; then
+X	    set $x
+X	  else
+X	    set ''
+X	  fi
+X	  case "$1" in
+X	    at)
+X	      case "$2" in
+X		daemon)
+X		  if lpr -r $obj ; then
+X		    echo "The daemon catches the $obj, turns it into paper,"
+X		    echo "and leaves it in the basket."
+X    obs=`echo '' $objs '' | sed -e "s/ $obj / /" -e 's/^ //' -e 's/ $//'`
+X		  else
+X		    echo "The daemon is nowhere to be found."
+X		  fi
+X		  ;;
+X		*)
+X		  echo "At what?"
+X		  ;;
+X	      esac
+X	      ;;
+X	    *)
+X	      echo "Throw $obj at what?"
+X	      ;;
+X	  esac
+X	elif $HAS " $kn " " $obj " ; then
+X	  echo "It is in your knapsack."
+X	else
+X	  echo "I see no $obj here."
+X	fi
+X      else
+X	echo "Throw what?"
+X      fi
+X      ;;
+X
+X    u|up)
+X      if cd .. ; then
+X	echo "You pull yourself up to a new level."
+X      else
+X	echo "You can't reach that high!"
+X      fi
+X      ;;
+X
+X    wake)
+X      if [ "$obj" ] ; then
+X	echo "You awaken the $obj monster:"
+X	env PATH=$OPATH $obj $x
+X	echo "The monster slithers back into the darkness."
+X      else
+X	echo "Wake what?"
+X      fi
+X      ;;
+X
+X    w|where)
+X      echo "You are in $room."
+X      ;;
+X
+X    xyzzy)
+X      if cd ; then
+X	echo "A strange feeling comes over you."
+X      else
+X	echo "Your spell fizzles out."
+X      fi
+X      ;;
+X
+X    *)
+X      if [ "$verb" ] ; then
+X	if $wiz ; then
+X	  env PATH=$OPATH $verb $obj $x
+X	else
+X	  echo "I don't know how to \"$verb\"."
+X	  echo 'Type "help" for assistance.'
+X	fi
+X      fi
+X      ;;
+X  esac
+Xdone
+X
+X
+X
+X
+X
+X
+X
+X
+X
+X
+END_OF_FILE
+if test 12019 -ne `wc -c <'ash.sh'`; then
+    echo shar: \"'ash.sh'\" unpacked with wrong size!
+fi
+# end of 'ash.sh'
+fi
+if test -f 'has.c' -a "${1}" != "-c" ; then 
+  echo shar: Will not clobber existing file \"'has.c'\"
+else
+echo shar: Extracting \"'has.c'\" \(326 characters\)
+sed "s/^X//" >'has.c' <<'END_OF_FILE'
+X/*
+X**  Utility for ASH.
+X**	has list element
+X*/
+X
+Xexit(X) { _exit(X); }
+X
+Xmain(ac, av)
+X    int			 ac;
+X    char		*av[];
+X{
+X    register char	*p;
+X    register char	*q;
+X    register int	 l;
+X
+X    if (ac == 3)
+X	for (p = av[2], q = av[1], l = strlen(p); *q; q++)
+X	    if (*p == *q && strncmp(p, q, l) == 0)
+X		_exit(0);
+X
+X    _exit(1);
+X}
+END_OF_FILE
+if test 326 -ne `wc -c <'has.c'`; then
+    echo shar: \"'has.c'\" unpacked with wrong size!
+fi
+# end of 'has.c'
+fi
+echo shar: End of shell archive.
+exit 0
